@@ -25,6 +25,12 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+          
+      - name: Show working directory and contents
+        run: |
+          echo "📂 Current directory: $(pwd)"
+          echo "📁 Directory contents:"
+          ls -R
 
       - name: Run Evaluation Script
         run: |
