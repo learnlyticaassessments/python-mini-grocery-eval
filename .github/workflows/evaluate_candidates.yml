@@ -30,9 +30,4 @@ jobs:
         run: |
           mkdir -p student_repos
           python evaluate.py
-
-      - name: Upload Reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: student-reports
-          path: results/
+          
