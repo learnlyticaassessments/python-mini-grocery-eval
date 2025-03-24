@@ -29,5 +29,5 @@ jobs:
       - name: Run Evaluation Script
         run: |
           mkdir -p student_repos
-          python evaluator/evaluate.py
+          python ${{ github.workspace }}/evaluator/evaluate.py
           
