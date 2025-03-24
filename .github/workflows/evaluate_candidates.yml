@@ -34,5 +34,5 @@ jobs:
       - name: Upload Reports
         uses: actions/upload-artifact@v4
         with:
-          name: student-reports-${{ github.repository }}-${{ github.run_id }}
+          name: reports-${{ github.event.repository.name }}-${{ github.run_id }}
           path: results/summary.xlsx
