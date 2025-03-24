@@ -27,8 +27,8 @@ def evaluate_student_code(student_id, local_path):
     return results, total_score
 
 def run_all():
-    print("📄 Reading student list from evaluator/students.csv...")
-    df = pd.read_csv("evaluator/students.csv")
+    print("📄 Reading student list from evaluate/students.csv...")
+    df = pd.read_csv("evaluate/students.csv")
     results = {}
 
     for _, row in df.iterrows():
