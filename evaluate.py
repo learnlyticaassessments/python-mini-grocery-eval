@@ -28,7 +28,7 @@ def run_all():
 
         print(f"📥 Pulling code from {student_id} at {ip}")
         os.makedirs(f"student_repos/{student_id}", exist_ok=True)
-        scp_command = f"scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@{ip}:/home/ubuntu/student.py student_repos/{student_id}/"
+        scp_command = f"scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@{ip}:/home/ubuntu/python-mini-grocery/student.py student_repos/{student_id}/"
         os.system(scp_command)
 
         if not os.path.exists(f"student_repos/{student_id}/student.py"):
