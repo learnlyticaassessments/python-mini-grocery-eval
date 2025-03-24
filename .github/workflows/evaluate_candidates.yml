@@ -32,7 +32,7 @@ jobs:
           python ${{ github.workspace }}/evaluate/evaluate.py
 
       - name: Upload Reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: student-reports
           path: results/summary.xlsx
