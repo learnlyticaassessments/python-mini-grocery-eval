@@ -1,27 +1,25 @@
-from student import GroceryManager
-
-def test_add_full():
+def test_add_full(student):
     products = []
-    gm = GroceryManager()
+    gm = student.GroceryManager()
     gm.add_product(products, "Apples", 3.0, 5, category="Fruits")
     return products == [{'name': 'Apples', 'price': 3.0, 'quantity': 5, 'category': 'Fruits'}]
 
-def test_default_qty():
+def test_default_qty(student):
     products = []
-    gm = GroceryManager()
+    gm = student.GroceryManager()
     gm.add_product(products, "Bread", 2.0, category="Bakery")
     return products == [{'name': 'Bread', 'price': 2.0, 'quantity': 1, 'category': 'Bakery'}]
 
-def test_discount():
+def test_discount(student):
     products = []
-    gm = GroceryManager()
+    gm = student.GroceryManager()
     gm.add_product(products, "Milk", 2.0, 3, category="Dairy")
     gm.add_product(products, "Eggs", 0.5, 12, category="Dairy")
     return gm.total_inventory_value(products, lambda p: p["price"] * 0.9) == 8.46
 
-def test_tax():
+def test_tax(student):
     products = [{"name": "Rice", "price": 1.0, "quantity": 10, "category": "Grains"}]
-    gm = GroceryManager()
+    gm = student.GroceryManager()
     return gm.total_inventory_value(products, lambda p: p["price"] * 1.15) == 11.5
 
 test_suite = {
