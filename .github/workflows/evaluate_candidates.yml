@@ -1,0 +1,38 @@
+name: Run Mini Grocery Evaluator
+
+on:
+  workflow_dispatch:
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Evaluator Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install pandas openpyxl
+
+      - name: Setup SSH Access
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+      - name: Run Evaluation Script
+        run: |
+          mkdir -p student_repos
+          python evaluate.py
+
+      - name: Upload Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: student-reports
+          path: results/
