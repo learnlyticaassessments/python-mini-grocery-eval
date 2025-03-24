@@ -30,4 +30,9 @@ jobs:
         run: |
           mkdir -p student_repos
           python ${{ github.workspace }}/evaluate/evaluate.py
-          
+
+      - name: Upload Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: student-reports
+          path: results/summary.xlsx
