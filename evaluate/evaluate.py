@@ -12,12 +12,18 @@ def evaluate_student_code(student_id, local_path):
     # Temporarily copy student.py into evaluate/ to work with pytest
     student_file = os.path.join(local_path, "student.py")
     temp_student_path = os.path.join("evaluate", "student.py")
-    os.system(f"cp {student_file} {temp_student_path}")
+    #os.system(f"cp {student_file} {temp_student_path}")
 
+    # Ensure copy completes before proceeding
+    subprocess.run(["cp", student_file, temp_student_path], check=True)
+    
+    # Add current directory to Python path
+    env = os.environ.copy()
+    env["PYTHONPATH"] = os.path.abspath("evaluate") + ":" + env.get("PYTHONPATH", "")
     # Run pytest and collect results
     result = subprocess.run(
         [sys.executable, "-m", "pytest", "test_cases.py", "--tb=short", "-q"],
-        capture_output=True, text=True, cwd="evaluate"
+        capture_output=True, text=True, cwd="evaluate", env=env
     )
 
     output = result.stdout
