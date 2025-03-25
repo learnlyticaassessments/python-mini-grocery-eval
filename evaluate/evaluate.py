@@ -13,31 +13,74 @@ def load_student_module(student_file):
     spec.loader.exec_module(student_module)
     return student_module
 
+
 def evaluate_student_code(student_id, local_path):
     print(f"🔍 Evaluating code for {student_id}...")
-    student_file = os.path.join(local_path, "student.py")
+    test_path = os.path.join(local_path, "test_cases.py")
 
-    # 1. Load student.py FIRST
-    load_student_module(student_file)
+    # 1. Copy test_cases.py into the student's directory
+    if not os.path.exists(test_path):
+        import shutil
+        shutil.copy("test_cases.py", local_path)
 
-    # 2. Now import test_cases (which depends on student)
-    from test_cases import test_suite
+    # 2. Run pytest on the student's folder
+    result = subprocess.run(
+        ["pytest", test_path, "--tb=short", "-q"],
+        capture_output=True,
+        text=True,
+        cwd=local_path
+    )
 
-    # 3. Run tests manually (no pytest)
+    output = result.stdout
+    print(output)
+
+    # 3. Parse test result lines
     results = {}
-    for tc_id, (test_func, max_score) in test_suite.items():
-        try:
-            passed = test_func()  # Assume test_func returns True on success
-            results[tc_id] = max_score if passed else 0
-            status = "✅ Passed" if passed else "❌ Failed"
-            print(f"  - {tc_id}: {status} ({results[tc_id]}/{max_score})")
-        except Exception as e:
-            print(f"  - {tc_id}: ❌ Failed (0/{max_score}) - Error: {str(e)}")
-            results[tc_id] = 0
+    total_score = 0
+    suite = {
+        "test_add_product": 2.5,
+        "test_total_inventory_value": 2.5,
+        "test_total_inventory_value_with_discount": 2.5
+    }
 
-    total_score = sum(results.values())
-    print(f"🏁 Total score for {student_id}: {total_score} / {sum(m for _, m in test_suite.values())}")
+    for line in output.splitlines():
+        for test_name in suite:
+            if test_name in line:
+                passed = "PASSED" in line or "✓" in line
+                score = suite[test_name] if passed else 0
+                results[test_name] = score
+                status = "✅ Passed" if passed else "❌ Failed"
+                print(f"  - {test_name}: {status} ({score}/{suite[test_name]})")
+                total_score += score
+
+    print(f"🏁 Total score for {student_id}: {total_score} / {sum(suite.values())}")
     return results, total_score
+
+# def evaluate_student_code(student_id, local_path):
+#     print(f"🔍 Evaluating code for {student_id}...")
+#     student_file = os.path.join(local_path, "student.py")
+
+#     # 1. Load student.py FIRST
+#     load_student_module(student_file)
+
+#     # 2. Now import test_cases (which depends on student)
+#     from test_cases import test_suite
+
+#     # 3. Run tests manually (no pytest)
+#     results = {}
+#     for tc_id, (test_func, max_score) in test_suite.items():
+#         try:
+#             passed = test_func()  # Assume test_func returns True on success
+#             results[tc_id] = max_score if passed else 0
+#             status = "✅ Passed" if passed else "❌ Failed"
+#             print(f"  - {tc_id}: {status} ({results[tc_id]}/{max_score})")
+#         except Exception as e:
+#             print(f"  - {tc_id}: ❌ Failed (0/{max_score}) - Error: {str(e)}")
+#             results[tc_id] = 0
+
+#     total_score = sum(results.values())
+#     print(f"🏁 Total score for {student_id}: {total_score} / {sum(m for _, m in test_suite.values())}")
+#     return results, total_score
 
 def run_all():
     print("📄 Reading student list from evaluate/students.csv...")
