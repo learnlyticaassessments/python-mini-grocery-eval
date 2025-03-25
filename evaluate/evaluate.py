@@ -3,27 +3,30 @@ import sys
 import pandas as pd
 import importlib.util
 import subprocess
-from test_cases import test_suite
-from report_generator import generate_reports
+
+def load_student_module(student_file):
+    """Dynamically load student.py before anything else"""
+    spec = importlib.util.spec_from_file_location("student", student_file)
+    student_module = importlib.util.module_from_spec(spec)
+    sys.modules["student"] = student_module  # Make it globally available
+    spec.loader.exec_module(student_module)
+    return student_module
 
 def evaluate_student_code(student_id, local_path):
     print(f"🔍 Evaluating code for {student_id}...")
-
     student_file = os.path.join(local_path, "student.py")
 
-    # Dynamically load student.py
-    spec = importlib.util.spec_from_file_location("student", student_file)
-    student_module = importlib.util.module_from_spec(spec)
-    sys.modules["student"] = student_module  # Make it available globally
-    spec.loader.exec_module(student_module)
+    # 1. Load student.py FIRST
+    load_student_module(student_file)
 
-    # Now manually run test cases (instead of pytest)
+    # 2. Now import test_cases (which depends on student)
+    from test_cases import test_suite
+
+    # 3. Run tests manually (no pytest)
     results = {}
-    from test_cases import test_suite  # Import after student is loaded!
-
     for tc_id, (test_func, max_score) in test_suite.items():
         try:
-            passed = test_func()  # Assume test_func returns True if passed
+            passed = test_func()  # Assume test_func returns True on success
             results[tc_id] = max_score if passed else 0
             status = "✅ Passed" if passed else "❌ Failed"
             print(f"  - {tc_id}: {status} ({results[tc_id]}/{max_score})")
@@ -33,47 +36,7 @@ def evaluate_student_code(student_id, local_path):
 
     total_score = sum(results.values())
     print(f"🏁 Total score for {student_id}: {total_score} / {sum(m for _, m in test_suite.values())}")
-
     return results, total_score
-
-# def evaluate_student_code(student_id, local_path):
-#     print(f"🔍 Evaluating code for {student_id}...")
-
-#     # Temporarily copy student.py into evaluate/ to work with pytest
-#     student_file = os.path.join(local_path, "student.py")
-#     temp_student_path = os.path.join("evaluate", "student.py")
-#     ## os.system(f"cp {student_file} {temp_student_path}")
-
-#     # # Ensure copy completes before proceeding
-#     # subprocess.run(["cp", student_file, temp_student_path], check=True)
-    
-#     # # Add current directory to Python path
-#     # env = os.environ.copy()
-#     # env["PYTHONPATH"] = os.path.abspath("evaluate") + ":" + env.get("PYTHONPATH", "")
-    
-#     # Run pytest and collect results
-#     result = subprocess.run(
-#         [sys.executable, "-m", "pytest", "test_cases.py", "--tb=short", "-q"],
-#         capture_output=True, text=True, cwd="evaluate", env=env
-#     )
-
-#     output = result.stdout
-#     print(output)
-
-#     # Parse output for individual test case results
-#     results = {}
-#     for line in output.strip().splitlines():
-#         for tc_id in test_suite:
-#             if tc_id in line:
-#                 passed = "PASSED" in line or "✓" in line
-#                 results[tc_id] = test_suite[tc_id][1] if passed else 0
-#                 status = "✅ Passed" if passed else "❌ Failed"
-#                 print(f"  - {tc_id}: {status} ({results[tc_id]}/{test_suite[tc_id][1]})")
-
-#     total_score = sum(results.values())
-#     print(f"🏁 Total score for {student_id}: {total_score} / {sum(m for _, m in test_suite.values())}")
-
-#     return results, total_score
 
 def run_all():
     print("📄 Reading student list from evaluate/students.csv...")
