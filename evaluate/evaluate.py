@@ -5,18 +5,49 @@ import importlib.util
 import subprocess
 from report_generator import generate_reports
 
-def load_student_module(student_file):
-    print(f"Attempting to load module from: {student_file}")
-    print(f"File exists: {os.path.exists(student_file)}")
-    print(f"Current working directory: {os.getcwd()}")
-    print(f"Python path: {sys.path}")
+# def load_student_module(student_file):
+#     print(f"Attempting to load module from: {student_file}")
+#     print(f"File exists: {os.path.exists(student_file)}")
+#     print(f"Current working directory: {os.getcwd()}")
+#     print(f"Python path: {sys.path}")
 
-    """Dynamically load student.py before anything else"""
-    spec = importlib.util.spec_from_file_location("student", student_file)
-    student_module = importlib.util.module_from_spec(spec)
-    sys.modules["student"] = student_module  # Make it globally available
-    spec.loader.exec_module(student_module)
-    return student_module
+#     """Dynamically load student.py before anything else"""
+#     spec = importlib.util.spec_from_file_location("student", student_file)
+#     student_module = importlib.util.module_from_spec(spec)
+#     sys.modules["student"] = student_module  # Make it globally available
+#     spec.loader.exec_module(student_module)
+#     return student_module
+
+def load_student_module(student_file):
+    """Dynamically load student.py with improved error handling"""
+    try:
+        print(f"Attempting to load module from: {student_file}")
+        print(f"File exists: {os.path.exists(student_file)}")
+        print(f"Current working directory: {os.getcwd()}")
+        print(f"Python path: {sys.path}")
+
+        # Construct the full path to student.py
+        full_path = os.path.abspath(student_file)
+        
+        # Generate a unique module name to avoid import conflicts
+        module_name = f"student_module_{os.path.basename(os.path.dirname(full_path))}"
+        
+        # Create the module specification
+        spec = importlib.util.spec_from_file_location(module_name, full_path)
+        
+        # Create the module
+        student_module = importlib.util.module_from_spec(spec)
+        
+        # Add the module to sys.modules to make it importable
+        sys.modules[module_name] = student_module
+        
+        # Execute the module
+        spec.loader.exec_module(student_module)
+        
+        return student_module
+    except Exception as e:
+        print(f"Error importing student module from {student_file}: {e}")
+        raise
 
 def evaluate_student_code(student_id, local_path):
     print(f"🔍 Evaluating code for {student_id}...")
