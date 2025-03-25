@@ -28,6 +28,7 @@ jobs:
 
       - name: Run Evaluation Script
         run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/student_repos          
           mkdir -p student_repos
           python ${{ github.workspace }}/evaluate/evaluate.py
 
