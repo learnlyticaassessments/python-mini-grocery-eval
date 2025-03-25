@@ -4,12 +4,43 @@ import pytest
 import os
 import sys
 
-# Add the student's directory to Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# # Add the student's directory to Python path
+# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from student_repos.Anil.student import GroceryManager
+# from student_repos.Anil.student import GroceryManager
 
-#from student import GroceryManager
+# #from student import GroceryManager
+
+# Dynamically import the student module
+def import_student_module():
+    # The current directory of test_cases.py
+    test_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Parent directory (where student_repos is located)
+    parent_dir = os.path.dirname(test_dir)
+    
+    # Attempt to find the student module dynamically
+    current_student_dir = os.path.join(parent_dir, os.environ.get('CURRENT_STUDENT_DIR', ''))
+    
+    if not os.path.exists(current_student_dir):
+        raise ValueError(f"Student directory not found: {current_student_dir}")
+    
+    # Add the parent directory to Python path to ensure imports work
+    sys.path.insert(0, parent_dir)
+    
+    # Dynamically import the student module
+    student_module_path = os.path.join(current_student_dir, "student.py")
+    spec = importlib.util.spec_from_file_location("student", student_module_path)
+    student_module = importlib.util.module_from_spec(spec)
+    sys.modules["student"] = student_module
+    spec.loader.exec_module(student_module)
+    
+    return student_module
+
+# Import the student module dynamically
+StudentModule = import_student_module()
+GroceryManager = StudentModule.GroceryManager
+
 
 @pytest.fixture
 def sample_products():
