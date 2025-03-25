@@ -2,41 +2,38 @@ import os
 import sys
 import pandas as pd
 import importlib.util
-import subprocess
-from test_cases import test_suite
+from test_cases import run_test_suite
 from report_generator import generate_reports
 
+def load_student_module(student_py_path):
+    module_name = "student_submission"
+    spec = importlib.util.spec_from_file_location(module_name, student_py_path)
+    student_module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = student_module
+    spec.loader.exec_module(student_module)
+    return student_module
+
 def evaluate_student_code(student_id, local_path):
-    print(f"🔍 Evaluating code for {student_id}...")
+    print(f"\n🔍 Evaluating code for {student_id}...")
 
-    # Temporarily copy student.py into evaluate/ to work with pytest
     student_file = os.path.join(local_path, "student.py")
-    temp_student_path = os.path.join("evaluate", "student.py")
-    os.system(f"cp {student_file} {temp_student_path}")
+    if not os.path.exists(student_file):
+        print(f"❌ student.py missing for {student_id}. Skipping.")
+        return {}, 0
 
-    # Run pytest and collect results
-    result = subprocess.run(
-        [sys.executable, "-m", "pytest", "test_cases.py", "--tb=short", "-q"],
-        capture_output=True, text=True, cwd="evaluate"
-    )
+    try:
+        student_module = load_student_module(student_file)
+        results, total_score, test_suite = run_test_suite(student_module)
 
-    output = result.stdout
-    print(output)
+        for name, score in results.items():
+            status = "✅ Passed" if score > 0 else "❌ Failed"
+            print(f"  - {name}: {status} ({score}/{test_suite[name][1]})")
 
-    # Parse output for individual test case results
-    results = {}
-    for line in output.strip().splitlines():
-        for tc_id in test_suite:
-            if tc_id in line:
-                passed = "PASSED" in line or "✓" in line
-                results[tc_id] = test_suite[tc_id][1] if passed else 0
-                status = "✅ Passed" if passed else "❌ Failed"
-                print(f"  - {tc_id}: {status} ({results[tc_id]}/{test_suite[tc_id][1]})")
-
-    total_score = sum(results.values())
-    print(f"🏁 Total score for {student_id}: {total_score} / {sum(m for _, m in test_suite.values())}")
-
-    return results, total_score
+        print(f"🏁 Total score for {student_id}: {total_score} / {sum(w for _, w in test_suite.values())}")
+        return results, total_score
+    except Exception as e:
+        print(f"💥 Error evaluating {student_id}: {e}")
+        return {}, 0
 
 def run_all():
     print("📄 Reading student list from evaluate/students.csv...")
@@ -55,11 +52,6 @@ def run_all():
         scp_command = f"scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@{ip}:/home/ubuntu/python-mini-grocery/student.py {student_dir}/"
         print(f"🔄 Running SCP: {scp_command}")
         os.system(scp_command)
-
-        student_file = os.path.join(student_dir, "student.py")
-        if not os.path.exists(student_file):
-            print(f"❌ student.py missing for {student_id}. Skipping.")
-            continue
 
         res, total = evaluate_student_code(student_id, student_dir)
         results[student_id] = {
