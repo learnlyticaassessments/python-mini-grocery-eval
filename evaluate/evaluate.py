@@ -17,9 +17,15 @@ def evaluate_student_code(student_id, local_path):
     print(f"🔍 Evaluating code for {student_id}...")
     student_file = os.path.join(local_path, "student.py")
 
-    # 1. Load student.py FIRST
-    load_student_module(student_file)
+    sys.path.insert(0, local_path)
 
+    # 1. Load student.py FIRST
+    try:
+        load_student_module(student_file)
+    except Exception as e:
+        print(f"Error loading student module: {e}")
+        return {}, 0
+    
     # 2. Run tests using pytest
     print("Running pytest...")
     result = subprocess.run(
