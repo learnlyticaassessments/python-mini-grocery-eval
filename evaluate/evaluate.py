@@ -1,29 +1,41 @@
-import importlib.util
 import os
+import sys
 import pandas as pd
+import importlib.util
+import subprocess
 from test_cases import test_suite
 from report_generator import generate_reports
 
 def evaluate_student_code(student_id, local_path):
     print(f"🔍 Evaluating code for {student_id}...")
 
-    spec = importlib.util.spec_from_file_location("student", os.path.join(local_path, "student.py"))
-    student = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(student)
+    # Temporarily copy student.py into evaluate/ to work with pytest
+    student_file = os.path.join(local_path, "student.py")
+    temp_student_path = os.path.join("evaluate", "student.py")
+    os.system(f"cp {student_file} {temp_student_path}")
 
+    # Run pytest and collect results
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "test_cases.py", "--tb=short", "-q"],
+        capture_output=True, text=True, cwd="evaluate"
+    )
+
+    output = result.stdout
+    print(output)
+
+    # Parse output for individual test case results
     results = {}
-    for tc_id, (test_fn, marks) in test_suite.items():
-        try:
-            passed = test_fn(student)
-            results[tc_id] = marks if passed else 0
-            status = "✅ Passed" if passed else "❌ Failed"
-            print(f"  - {tc_id}: {status} ({results[tc_id]}/{marks})")
-        except Exception as e:
-            results[tc_id] = 0
-            print(f"  - {tc_id}: ❌ Error during execution ({e})")
+    for line in output.strip().splitlines():
+        for tc_id in test_suite:
+            if tc_id in line:
+                passed = "PASSED" in line or "✓" in line
+                results[tc_id] = test_suite[tc_id][1] if passed else 0
+                status = "✅ Passed" if passed else "❌ Failed"
+                print(f"  - {tc_id}: {status} ({results[tc_id]}/{test_suite[tc_id][1]})")
 
     total_score = sum(results.values())
     print(f"🏁 Total score for {student_id}: {total_score} / {sum(m for _, m in test_suite.values())}")
+
     return results, total_score
 
 def run_all():
