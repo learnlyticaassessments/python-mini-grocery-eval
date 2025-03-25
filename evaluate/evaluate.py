@@ -53,6 +53,8 @@ def evaluate_student_code(student_id, local_path):
     print(f"🔍 Evaluating code for {student_id}...")
     student_file = os.path.join(local_path, "student.py")
 
+    os.environ['CURRENT_STUDENT_DIR'] = local_path
+
     sys.path.insert(0, local_path)
 
     # 1. Load student.py FIRST
@@ -68,7 +70,8 @@ def evaluate_student_code(student_id, local_path):
         [sys.executable, "-m", "pytest", "evaluate/test_cases.py", "--tb=short", "-v"],
         capture_output=True,
         text=True,
-        cwd=os.getcwd()
+        cwd=os.getcwd(),
+        env=os.environ.copy()  # Pass the modified environment
     )
 
     print(result)
