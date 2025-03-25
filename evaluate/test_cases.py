@@ -10,19 +10,19 @@ def sample_products():
         {"name": "Eggs", "price": 0.5, "quantity": 12, "category": "Dairy"}
     ]
 
-def test_add_product():
+def test_add_product(sample_products):
     gm = GroceryManager()
     new_product = {"name": "Rice", "price": 1.0, "quantity": 10, "category": "Grains"}
     gm.add_product(sample_products, **new_product)
     assert len(sample_products) == 5
     assert sample_products[-1] == new_product
 
-def test_total_inventory_value():
+def test_total_inventory_value(sample_products):
     gm = GroceryManager()
     total_value = gm.total_inventory_value(sample_products)
     assert total_value == pytest.approx(29.0, 0.01)  # Corrected expected value
 
-def test_total_inventory_value_with_discount():
+def test_total_inventory_value_with_discount(sample_products):
     gm = GroceryManager()
     total_value = gm.total_inventory_value(sample_products, price_modifier=lambda p: p["price"] * 0.9)
     assert total_value == pytest.approx(26.1, 0.01)  # Corrected expected value
