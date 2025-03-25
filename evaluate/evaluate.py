@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 import importlib.util
 import subprocess
+from report_generator import generate_reports
 
 def load_student_module(student_file):
     """Dynamically load student.py before anything else"""
