@@ -23,7 +23,7 @@ def evaluate_student_code(student_id, local_path):
     # 2. Run tests using pytest
     print("Running pytest...")
     result = subprocess.run(
-        [sys.executable, "-m", "pytest", "test_cases.py", "--tb=short", "-v"],
+        [sys.executable, "-m", "pytest", "evaluate/test_cases.py", "--tb=short", "-v"],
         capture_output=True,
         text=True,
         cwd=os.getcwd()
