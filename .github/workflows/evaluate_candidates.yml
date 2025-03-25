@@ -31,7 +31,7 @@ jobs:
       - name: Run Evaluation Script
         run: |
           mkdir -p student_repos
-          python ${{ github.workspace }}/evaluate/evaluate.py
+          PYTHONPATH=${{ github.workspace }}/student_repos python ${{ github.workspace }}/evaluate/evaluate.py
 
       - name: Upload Reports
         uses: actions/upload-artifact@v4
