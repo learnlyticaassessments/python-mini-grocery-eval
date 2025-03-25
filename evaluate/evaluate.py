@@ -29,6 +29,13 @@ def evaluate_student_code(student_id, local_path):
         cwd=os.getcwd()
     )
 
+    print(result)
+    print("-------------")
+    print("-------------")
+    print("-------------")
+    print("-------------")
+    print("-------------")
+    print("-------------")
     # 3. Parse pytest output
     results = {}
     total_score = 0
