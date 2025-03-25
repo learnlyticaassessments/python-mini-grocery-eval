@@ -13,6 +13,56 @@ def load_student_module(student_file):
     spec.loader.exec_module(student_module)
     return student_module
 
+def evaluate_student_code(student_id, local_path):
+    print(f"🔍 Evaluating code for {student_id}...")
+    student_file = os.path.join(local_path, "student.py")
+
+    # 1. Load student.py FIRST
+    load_student_module(student_file)
+
+    # 2. Run tests using pytest
+    print("Running pytest...")
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "test_cases.py", "--tb=short", "-v", "--json-report"],
+        capture_output=True,
+        text=True,
+        cwd=os.getcwd()
+    )
+
+    # 3. Parse pytest output
+    results = {}
+    total_score = 0
+    from test_cases import test_suite
+
+    # Parse console output for test results
+    for line in result.stdout.split('\n'):
+        for tc_id, (_, max_score) in test_suite.items():
+            if tc_id in line:
+                if "PASSED" in line:
+                    results[tc_id] = max_score
+                    total_score += max_score
+                    print(f"  - {tc_id}: ✅ Passed ({max_score}/{max_score})")
+                elif "FAILED" in line:
+                    results[tc_id] = 0
+                    print(f"  - {tc_id}: ❌ Failed (0/{max_score})")
+
+    # If no results found, consider all tests failed
+    if not results:
+        for tc_id, (_, max_score) in test_suite.items():
+            results[tc_id] = 0
+            print(f"  - {tc_id}: ❌ Failed (0/{max_score})")
+
+    # Print total score
+    total_possible = sum(m for _, m in test_suite.values())
+    print(f"🏁 Total score for {student_id}: {total_score} / {total_possible}")
+
+    # Print error output for debugging
+    if result.stderr:
+        print("🚨 Pytest Error Output:")
+        print(result.stderr)
+
+    return results, total_score
+
 
 # def evaluate_student_code(student_id, local_path):
 #     print(f"🔍 Evaluating code for {student_id}...")
@@ -56,31 +106,31 @@ def load_student_module(student_file):
 #     print(f"🏁 Total score for {student_id}: {total_score} / {sum(suite.values())}")
 #     return results, total_score
 
-def evaluate_student_code(student_id, local_path):
-    print(f"🔍 Evaluating code for {student_id}...")
-    student_file = os.path.join(local_path, "student.py")
+# def evaluate_student_code(student_id, local_path):
+#     print(f"🔍 Evaluating code for {student_id}...")
+#     student_file = os.path.join(local_path, "student.py")
 
-    # 1. Load student.py FIRST
-    load_student_module(student_file)
+#     # 1. Load student.py FIRST
+#     load_student_module(student_file)
 
-    # 2. Now import test_cases (which depends on student)
-    from test_cases import test_suite
+#     # 2. Now import test_cases (which depends on student)
+#     from test_cases import test_suite
 
-    # 3. Run tests manually (no pytest)
-    results = {}
-    for tc_id, (test_func, max_score) in test_suite.items():
-        try:
-            passed = test_func()  # Assume test_func returns True on success
-            results[tc_id] = max_score if passed else 0
-            status = "✅ Passed" if passed else "❌ Failed"
-            print(f"  - {tc_id}: {status} ({results[tc_id]}/{max_score})")
-        except Exception as e:
-            print(f"  - {tc_id}: ❌ Failed (0/{max_score}) - Error: {str(e)}")
-            results[tc_id] = 0
+#     # 3. Run tests manually (no pytest)
+#     results = {}
+#     for tc_id, (test_func, max_score) in test_suite.items():
+#         try:
+#             passed = test_func()  # Assume test_func returns True on success
+#             results[tc_id] = max_score if passed else 0
+#             status = "✅ Passed" if passed else "❌ Failed"
+#             print(f"  - {tc_id}: {status} ({results[tc_id]}/{max_score})")
+#         except Exception as e:
+#             print(f"  - {tc_id}: ❌ Failed (0/{max_score}) - Error: {str(e)}")
+#             results[tc_id] = 0
 
-    total_score = sum(results.values())
-    print(f"🏁 Total score for {student_id}: {total_score} / {sum(m for _, m in test_suite.values())}")
-    return results, total_score
+#     total_score = sum(results.values())
+#     print(f"🏁 Total score for {student_id}: {total_score} / {sum(m for _, m in test_suite.values())}")
+#     return results, total_score
 
 def run_all():
     print("📄 Reading student list from evaluate/students.csv...")
