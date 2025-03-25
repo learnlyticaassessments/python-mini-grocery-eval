@@ -1,5 +1,15 @@
+
+
 import pytest
-from student import GroceryManager
+import os
+import sys
+
+# Add the student's directory to Python path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from student_repos.Anil.student import GroceryManager
+
+#from student import GroceryManager
 
 @pytest.fixture
 def sample_products():
