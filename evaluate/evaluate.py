@@ -69,10 +69,12 @@ def evaluate_student_code(student_id, local_path):
     total_score = 0
     from test_cases import test_suite
 
+    seen = set()
     # Parse console output for test results
     for line in result.stdout.split('\n'):
         for tc_id, (_, max_score) in test_suite.items():
-            if tc_id in line:
+            if tc_id in line and tc_id not in seen:
+                seen.add(tc_id)
                 if "PASSED" in line:
                     results[tc_id] = max_score
                     total_score += max_score
