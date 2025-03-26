@@ -5,18 +5,6 @@ import importlib.util
 import subprocess
 from report_generator import generate_reports
 
-# def load_student_module(student_file):
-#     print(f"Attempting to load module from: {student_file}")
-#     print(f"File exists: {os.path.exists(student_file)}")
-#     print(f"Current working directory: {os.getcwd()}")
-#     print(f"Python path: {sys.path}")
-
-#     """Dynamically load student.py before anything else"""
-#     spec = importlib.util.spec_from_file_location("student", student_file)
-#     student_module = importlib.util.module_from_spec(spec)
-#     sys.modules["student"] = student_module  # Make it globally available
-#     spec.loader.exec_module(student_module)
-#     return student_module
 
 def load_student_module(student_file):
     """Dynamically load student.py with improved error handling"""
