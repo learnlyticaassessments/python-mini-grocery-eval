@@ -9,11 +9,6 @@ from report_generator import generate_reports
 def load_student_module(student_file):
     """Dynamically load student.py with improved error handling"""
     try:
-        print(f"Attempting to load module from: {student_file}")
-        print(f"File exists: {os.path.exists(student_file)}")
-        print(f"Current working directory: {os.getcwd()}")
-        print(f"Python path: {sys.path}")
-
         # Construct the full path to student.py
         full_path = os.path.abspath(student_file)
         
